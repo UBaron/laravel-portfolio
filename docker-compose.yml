@@ -1,0 +1,39 @@
+version: '3'
+
+networks:
+    mynetwork:
+        driver: bridge
+
+services:
+    projectdb:
+      image: mysql:8
+      environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ROOT_HOST: '%'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      networks:
+         - mynetwork
+
+    phpmyadmin:
+        depends_on:
+            - projectdb
+        image: phpmyadmin/phpmyadmin
+        environment:
+            PMA_HOST: projectdb
+        ports:
+            - 8081:80
+        networks:
+        - mynetwork
+
+    php-apache:
+        build: ./
+        volumes:
+            - './:/var/www/html'
+        ports:
+            - 8080:80
+        depends_on:
+            - projectdb
+        networks:
+            - mynetwork
